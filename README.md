@@ -15,7 +15,15 @@
   - Sending files
   - Using voice channels
 
-### Idea to solve (TODO: Update)
+### Discovery
+
+Do discord show in the traffic infornation about:
+
+- [ ] Sender's user data
+- [ ] Receiver's user data
+- [ ] Server where the message is sent through
+- [ ] Type of data sended
+- [ ] Notifications received
 
 ### What data to collect
 
@@ -33,7 +41,7 @@
 ### How to produce data (TODO: Update)
 
 - [ ] Check out discord API
-- [ ] Check out ways to make automated data collection
+- [ ] Check out ways to make automated data collection (e.g. AutoHotKeys, Discord Webhooks)
 - [ ] Make tree types of bots
   - [ ] Periodically easy to detect
   - [ ] Randomly in a period of time, intermediate to detect
