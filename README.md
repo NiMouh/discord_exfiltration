@@ -17,7 +17,7 @@
   
  #### Por que a exfiltração de dados via Discord é díficl de detetar com regras simples
  
- A exfiltração de dados por meio de webhooks do discord é um técnica bastante popular, devido à forma como aproveita a infraestrutura da plataforma para mascarar atividades maliciosas. Estas funcionalidades, projetadas para facilitar integrações automatizadas e notificações acabam por ser exploradas em ataques cibernéticos, possibilitando que informações sensíveis sejam enviadas para fora da rede sem serem detetadas.
+ A exfiltração de dados por meio de webhooks do discord é um técnica bastante popular, devido à forma como aproveita a infraestrutura da plataforma para mascarar atividades maliciosas. Estas funcionalidades, são projetadas para facilitar integrações automatizadas e notificações acabam por ser exploradas em ataques cibernéticos, possibilitando que informações sensíveis sejam enviadas para fora da rede sem serem detetadas.
 
 ##### Como os Webhooks e a cifragem dos pacotes do Discord Dificultam a Deteção
 
