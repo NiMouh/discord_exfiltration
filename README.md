@@ -79,6 +79,19 @@ Do discord show in the traffic information about:
 | **WebSocket Session LifeSpan**             | Observation of socket handshake flows.                                         | Atypical patterns of socket sessions may indicate continuous or repeated exfiltration processes.                                           |
 | **TLS Certificate Analysis**               | Information about certificates received in the TLS handshake.                  | Validates the authenticity of the connection and checks for possible proxies or MITM.                                                      |
 
+### Data Aquisition on Real Life Context
+
+| **Data Type**                           | **Recommended Enterprise Tools**                                | **Description**                                                                                                         |
+|-----------------------------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| **Network Sessions and Connection Duration** | **Zeek**, **Cisco Secure Network Analytics** (Stealthwatch), **Darktrace** | Monitors and analyzes the duration and frequency of network sessions, identifying anomalous patterns and suspicious behaviors. |
+| **Ports and Protocols Used**            | **Suricata**, **Cisco ASA Firewalls**, **Palo Alto Networks Firewalls** | Monitors ports and protocols in use, including WebSockets, to detect unusual or unauthorized traffic.                    |
+| **Connection Attempts and Disconnections** | **Splunk**, **Elastic Stack (ELK)**, **QRadar** (SIEM)         | Logs established and closed connections, helping to identify the timing and frequency of activity on Discord.           |
+| **User Activity (Session Level)**       | **SIEMs** (e.g., **Splunk**, **QRadar**, **ArcSight**), **Darktrace** | Monitors session activity to provide an overview of user behavior over time.                                             |
+| **Identification of Shared Media Types** | **Next-Generation Firewalls** with **DPI** (e.g., **Palo Alto Networks**, **Fortinet**) | Uses deep packet inspection to identify media types (e.g., video, audio) shared, even in encrypted traffic.             |
+| **Daily and Weekly Activity Patterns**   | **Splunk**, **Elastic Stack**, **Grafana**                      | Analyzes temporal activity patterns to identify peak times and consistent behaviors.                                     |
+| **Presence in Voice Channels**           | **Next-Generation Firewalls** with continuous WebSocket monitoring support | Monitors activity in voice channels via WebSocket session analysis, providing insights on user presence and engagement.  |
+
+
 ### How to collect data (TODO: Update)
 
 - [ ] Tools to collect data
