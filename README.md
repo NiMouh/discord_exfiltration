@@ -75,8 +75,8 @@ Do discord show in the traffic information about:
 | **Packet Size**                       | Average packet size and standard deviation of packets sent.                                                                                               | Anomalies in packet size may indicate larger-than-normal data transfers; essential for identifying exfiltration.              |
 | **TLS Session Establishment and Duration** | Frequency and duration of TLS sessions established with Discord.                                                                                           | Long-duration sessions may indicate continuous data uploads. Useful for temporal analysis in the ML model.                    |
 | **Response Time and Latency**         | Time between requests and responses in packets exchanged with Discord.                                                                                    | Atypical behaviors may indicate the use of webhooks to quickly send data; useful for latency analysis.                        |
-| **WebSocket Session LifeSpan**        | Observation of socket handshake flows.                                                                           
-                    | Atypical patterns of socket sessions may indicate continuous or repeated exfiltration processes.                     |
+| **WebSocket Session LifeSpan**        | Observation of socket handshake flows.                                                                                     
+                     | Atypical patterns of socket sessions may indicate continuous or repeated exfiltration processes.                        |
 | **TLS Certificate Analysis**          | Information about certificates received in the TLS handshake.                                                                                             | Validates the authenticity of the connection and checks for possible proxies or MITM.                                       |
 
 ### How to collect data (TODO: Update)
