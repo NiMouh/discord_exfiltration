@@ -15,97 +15,108 @@
   - Sending files
   - Using voice channels
   
-#### Por que a exfiltração de dados via Discord é díficil de detetar com regras simples
+#### Why is it difficult to solve?
 
-Um dos maiores desafios na deteção de exfiltração de dados através de Discord é o facto de toda a comunicação ser cifrada. Quando dados são enviados para um webhook, o Discord utiliza HTTPS (HTTP sobre TLS), o que significa que os dados são cifrados durante a transmissão. Esta cifragem impossibilita a inspeção direta do conteúdo do tráfego pela maioria dos dispositivos de segurança de rede, como firewalls e sistemas de inspeção profunda de pacotes (DPI – Deep Packet Inspection), que analisam pacotes individuais para identificar conteúdos suspeitos. Assim, embora seja possível ver que há comunicação com o Discord, não é possível analisar ou filtrar o conteúdo dos dados enviados devido à cifragem, o que transforma este canal num veículo ideal para exfiltração de dados sem ser detetado.
+One of the biggest challenges in detecting data exfiltration via Discord is the fact that all communication is encrypted. When data is sent to a webhook, Discord uses HTTPS (HTTP over TLS), which means that the data is encrypted during transmission. This encryption makes it impossible for most network security devices, such as firewalls and Deep Packet Inspection (DPI) systems, which analyse individual packets to identify suspicious content, to directly inspect the content of the traffic. So, although it is possible to see that there is communication with Discord, it is not possible to analyse or filter the content of the data sent due to encryption, which makes this channel an ideal vehicle for exfiltrating data undetected.
 
-As firewalls e sistemas SIEM baseados em regras fixas enfrentam aqui uma limitação crítica. Sem acesso ao conteúdo cifrado dos pacotes, estes sistemas apenas conseguem monitorizar metadados básicos, como o endereço IP de destino, o porto, e o volume de dados. Contudo, como o Discord é amplamente utilizado e permitido em muitas redes empresariais, este tráfego parece legítimo e não levanta suspeitas de imediato.
+Firewalls and SIEM systems based on fixed rules face a critical limitation here. Without access to the encrypted content of the packets, these systems can only monitor basic metadata, such as the destination IP address, the port, and the volume of data. However, as Discord is widely used and permitted on many corporate networks, this traffic appears legitimate and doesn't immediately raise suspicions.
 
-A exfiltração de dados por meio de webhooks do discord é um técnica bastante popular, devido à forma como aproveita a infraestrutura da plataforma para mascarar atividades maliciosas. Estas funcionalidades, projetadas para facilitar integrações automatizadas e notificações acabam por ser exploradas em ataques cibernéticos, possibilitando que informações sensíveis sejam enviadas para fora da rede sem serem detetadas.
+Data exfiltration via Discord webhooks is a very popular technique because of the way it takes advantage of the platform's infrastructure to mask malicious activity. These features, designed to facilitate automated integrations and notifications, end up being exploited in cyber attacks, allowing sensitive information to be sent outside the network undetected.
+
+> [!NOTE]
+> Although Discord made some updates regarding security ([link](https://discord.com/blog/discord-update-september-26-2024-changelog)), malicious users still take advantage of tools that allow development of plugins.
 
 ### Real life examples
 
 Some examples of data exfiltration using Discord:
 
 - [The Hacker News - NS Stealer Uses Discord Bots to Exfiltrate Data](https://thehackernews.com/2024/01/ns-stealer-uses-discord-bots-to.html)
-- [Trellix - Discord I Want to Play a Game](https://www.trellix.com/blogs/research/discord-i-want-to-play-a-game/)
 - [Intel471 - How Discord is Abused for Cybercrime](https://intel471.com/blog/how-discord-is-abused-for-cybercrime)
-- [Cyfirma - Cyber Research on The Malicious Use of Discord](https://www.cyfirma.com/research/cyber-research-on-the-malicious-use-of-discord/)
 
 ### Discovery
 
-Discord Network Pool: `162.159.0.0/16`
+- It has a built-in function that enables automated messages sent to a text channel in the server (Webhooks)
+- Allows the upload of a variety file types (e.g. PNG, PDF, MP4)
+- The maximum file upload is 10MB
+
+### Filtering
+
+- Network Pool: `162.159.0.0/16`
 
 > Reference: [NsLookup.io](https://www.nslookup.io/domains/discordapp.com/webservers/)
 
-Do discord show in the traffic information about:
+- Protocols Used for communication: `TCP`
+  - Destination Port(s): TCP/80 and TCP/443
+  - Source Port(s): UDP/50000-65535
+- Protocols Used for voice communication: `QUIC`
 
-- [ ] Sender's user data
-- [ ] Receiver's user data
-- [ ] Server where the message is sent through
-- [ ] Type of data sended
-- [ ] Notifications received
+> [!NOTE]
+> Additional information to look for:
+>
+> - [ ] Sender's user data
+> - [ ] Receiver's user data
+> - [ ] Server where the message is sent through
+> - [ ] Type of data sended
+> - [ ] Notifications received
 
-### What data to collect
+### Aggregation
 
-- Types of data that can be collected:
-  - Flow data
-  - Packet captures
-  - Discord logs
-- > 1 milhão de fluxos
+To perform the analysis, the following data will be extracted:
 
-| **Data to Extract**                              | **Description**                                                                                 | **Purpose**                                                                                                      |
-|--------------------------------------------------|-------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| **Call Duration**                                | Monitor start and end logs to calculate the total duration of each call.                        | Determine total time of activity in calls; identify short calls vs. prolonged sessions.                         |
-| **Repeated Sessions and Intervals**              | Record number of interactions (calls or chats) per day and intervals between them.              | Identify activity patterns, periods of inactivity, and frequency of interactions.                               |
-| **Type of Media Shared (Video, Audio, GIFs, etc.)** | Track types of media shared in chats (video, images, audio, GIFs, text).                        | Analyze communication preferences; identify high media usage that may signal certain behaviors or intents.      |
-| **Participation in Group vs. Private Conversations** | Observe if the user interacts more in group or private settings.                              | Understand interaction style (collaborative vs. personal); detect differences in content shared.                |
-| **Daily and Weekly Activity Patterns**           | Analyze days and times when interactions (calls, chats) are most frequent.                     | Build a profile of peak times and periods of intensive activity.                                                |
-| **Message Length and Complexity**                | Monitor the average length and complexity of text messages in chats.                           | Assess communication style; detect potential indicators of focused or formal exchanges.                         |
-| **Presence in Voice Channels**                   | Record periods of activity in voice channels, including duration and frequency.                | Gain insight into continuous presence and engagement level in voice interactions.                               |
-| **Reaction and Engagement with Media**           | Track reactions (e.g., emoji, replies) to shared media (images, videos, audio, GIFs).          | Measure engagement and response sentiment to different media types.                                             |
-| **Content Type Distribution**                    | Analyze distribution of content types (text vs. media) in interactions.                        | Identify communication trends; determine if visual content is preferred over textual exchanges.                 |
+- Group and Private Conversations – the conversation type is obtained at the packet level (uploads/downloads)
+- Daily and Weekly message flow with various formats of files – analyzing the timestamps of interactions (uploads/downloads)
 
+> We need, at least, 1M Flows
 
-| **Data to Extract**                        | **Description**                                                                | **Purpose**                                                                                                                                |
-| ------------------------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **IP Addresses and Domains**               | Identification of IPs and domains used by Discord.                             | Enables distinction between legitimate activities and potentially suspicious ones; useful for creating a baseline of normal communication. |
-| **Communication Ports**                    | Typically, Discord uses port 443 (HTTPS).                                      | Identify if there is use of unusual ports for communication; helps detect attempts to evade detection.                                     |
-| **Packet Frequency and Volume**            | Quantity and frequency of packets sent/received over time.                     | Atypical behaviors in volume and frequency may indicate exfiltration. Used to train the model to detect activity peaks.                    |
-| **Temporal Sending Patterns**              | Identify if there is regularity or specific intervals in packet transmissions. | Detect scheduled or automated exfiltration; useful for analyzing behavioral patterns of the machine and user.                              |
-| **Packet Size**                            | Average packet size and standard deviation of packets sent.                    | Anomalies in packet size may indicate larger-than-normal data transfers; essential for identifying exfiltration.                           |
-| **TLS Session Establishment and Duration** | Frequency and duration of TLS sessions established with Discord.               | Long-duration sessions may indicate continuous data uploads. Useful for temporal analysis in the ML model.                                 |
-| **Response Time and Latency**              | Time between requests and responses in packets exchanged with Discord.         | Atypical behaviors may indicate the use of webhooks to quickly send data; useful for latency analysis.                                     |
-| **WebSocket Session LifeSpan**             | Observation of socket handshake flows.                                         | Atypical patterns of socket sessions may indicate continuous or repeated exfiltration processes.                                           |
-| **TLS Certificate Analysis**               | Information about certificates received in the TLS handshake.                  | Validates the authenticity of the connection and checks for possible proxies or MITM.                                                      |
+### Collection
 
-### Data Aquisition on Real Life Context
+In a testing context we are going to use:
 
-| **Data Type**                           | **Recommended Enterprise Tools**                                | **Description**                                                                                                         |
-|-----------------------------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| **Network Sessions and Connection Duration** | **Darktrace** | Monitors and analyzes the duration and frequency of network sessions, identifying anomalous patterns and suspicious behaviors. |
-| **Ports and Protocols Used**            | **Suricata**, **Palo Alto Networks Firewalls** | Monitors ports and protocols in use, including WebSockets, to detect unusual or unauthorized traffic.                    |
-| **Connection Attempts and Disconnections** | **Splunk**, **Elastic Stack (ELK)**, **QRadar** (SIEM)         | Logs established and closed connections, helping to identify the timing and frequency of activity on Discord.           |
-| **User Activity (Session Level)**       | **SIEMs** (e.g., **Splunk**, **QRadar**), **Darktrace** | Monitors session activity to provide an overview of user behavior over time.                                             |
-| **Identification of Shared Media Types** | **Next-Generation Firewalls** with **DPI** (e.g., **Palo Alto Networks**, **Fortinet**) | Uses deep packet inspection to identify media types (e.g., video, audio) shared, even in encrypted traffic.             |
-| **Daily and Weekly Activity Patterns**   | **Splunk**, **Elastic Stack**, **Grafana**                      | Analyzes temporal activity patterns to identify peak times and consistent behaviors.                                     |
-| **Presence in Voice Channels**           | **Next-Generation Firewalls** with continuous WebSocket monitoring support | Monitors activity in voice channels via WebSocket session analysis, providing insights on user presence and engagement.  |
+- Wireshark: For network analysis
+- Burp Suite: Proxy tools for traffic capturing
 
+But in a real life context, we could use:
 
-### How to collect data (TODO: Update)
+- Syslog and Agents: To obtain data from endpoints and discord activity
+- Suricata or Palo Alto Networks Firewalls: To monitor ports and protocols in use, e.g. TCP and QUIC, and detect unusual or unauthorized traffic.
 
-- [ ] Tools to collect data
-  - [ ] Wireshark
-  - [ ] Discord logs
-- [ ] Analyze what type of data discord makes
-- [ ] Evaluate what data can be collected
-- [ ] Data processing (TODO: Elaborate)
+### Sampling and Processing
 
-### How to produce data (TODO: Update)
+We are going to focus on flow data, where it has the following fields:
 
-- [ ] Check out discord API
-- [ ] Check out ways to make automated data collection (e.g. AutoHotKeys, Discord Webhooks)
-- [ ] Make tree types of bots
-  - [ ] Periodically easy to detect
-  - [ ] Randomly in a period of time, intermediate to detect
-  - [ ] Exfiltration through embedded images, hard (almost impossible) to detect
+- IP Source
+- IP Destination
+- Size of Exchanged Data
+- Data Flow Start/End Timestamp (in seconds)
+- IP Protocol Number
+
+In order to convert our qualitative data into quantitive data, we chosed to use observation windows of 0.1 seconds and 1 second
+
+> This allows a balance between the level of detail needed to capture relevant events and the volume of data generated
+
+- Mean and Standard Deviation of idle times: Unusual gaps or consistency between flows.
+- Number of flows: Indicating irregular usage patterns.
+- Size of exchanged data (Mean/Variance): Changes in data size can point to unexpected or secretive data transfers.
+  - Up/Down
+- Durations of Flows
+
+### Production
+
+Benign Behavior: It will be done by performing normal usage of the application, made by:
+
+- Humans: sending messages and files as usual
+- Bots: made by plugins added to the server
+
+Malicious Behavior: It will be done using tree types of bots:
+
+- Easy to Detect:
+  - Size: 10MB
+  - Frequency: Periodically (40s)
+- Intermediate to Detect:
+  - Size: 1-10MB
+  - Frequency: Same variance as a normal behavior
+- Hard (almost impossible) to Detect: Through embedded images, using Discord CDN
+
+### Tasks to be done
+
+POR COLOCAR AQUI
