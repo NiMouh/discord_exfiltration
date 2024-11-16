@@ -120,3 +120,32 @@ Malicious Behavior: It will be done using tree types of bots:
 ### Tasks to be done
 
 POR COLOCAR AQUI
+
+## Phase 2: Project Development
+
+### Project Structure
+
+### Bot Creation
+
+- Portal to build the bot: <https://discord.com/developers/applications>
+- Tutorial in python: <https://www.youtube.com/watch?v=UYJDKSah-Ww>
+
+### How to Run Scripts in the "Source" Folder
+
+1. Add virtual environment:
+
+```bash
+python -m venv venv
+```
+
+2. Enable the virtual environment:
+
+```bash
+venv\Scripts\activate
+```
+
+3. Install the dependencies:
+
+```bash
+pip install -r requirements.txt
+```
