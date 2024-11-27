@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+from itertools import groupby
 import os
 
 
@@ -28,7 +29,7 @@ def extractStatsAdv(data,threshold=0):
 #   p=[75,90,95,98]
 #   Pr1=np.array(np.percentile(data,p,axis=0))
 
-    silence,activity=extratctSilenceActivity(data,threshold)
+    silence,activity=extractSilenceActivity(data,threshold)
     
     if len(silence)>0:
         silence_faux=np.array([len(silence),np.mean(silence),np.std(silence)])
@@ -44,7 +45,10 @@ def extractStatsAdv(data,threshold=0):
     features=np.hstack((M1,Md1,Std1,silence_faux))
     return(features)
 
-def extratctSilenceActivity(data,threshold=0):
+def extractSilenceActivity(data,threshold=0):
+
+    # FIXME: combined_data = np.sum(data[:, [0, 2, 4, 6]], axis=1)
+
     if(data[0]<=threshold):
         s=[1]
         a=[]
@@ -62,6 +66,46 @@ def extratctSilenceActivity(data,threshold=0):
             a[-1]+=1
     return(s,a)
 
+def extractStatsNew(data):
+    # Variância dos tempos de silêncio e atividade
+    silence_durations, activity_durations = extractSilenceActivity(data)
+
+    # Estatísticas de silêncio
+    num_silences = len(silence_durations)
+    mean_silence_duration = np.mean(silence_durations) if silence_durations else 0
+    variance_silence_duration = np.var(silence_durations) if silence_durations else 0
+
+    # Estatísticas de atividade
+    num_activities = len(activity_durations)
+    mean_activity_duration = np.mean(activity_durations) if activity_durations else 0
+    variance_activity_duration = np.var(activity_durations) if activity_durations else 0
+
+    # Desvio padrão do número de bytes totais
+    total_bytes = data[:, 1] + data[:, 5] + data[:, 3] + data[:, 7]
+    bytes_std_dev = np.std(total_bytes)
+
+    # Rácio de bytes enviados e recebidos (Upload/Download)
+    tcp_upload = data[:, 1]
+    tcp_download = data[:, 5]
+    quic_upload = data[:, 3]
+    quic_download = data[:, 7]
+    
+    tcp_ratio = np.mean(tcp_upload / tcp_download) if np.any(tcp_download) else np.inf
+    quic_ratio = np.mean(quic_upload / quic_download) if np.any(quic_download) else np.inf
+
+    # Estatísticas da janela de observação
+    mean_window = np.mean(data, axis=0)
+    median_window = np.median(data, axis=0)
+    std_dev_window = np.std(data, axis=0)
+
+    # Combina todas as estatísticas em um único vetor
+    features = np.hstack((
+        num_silences, mean_silence_duration, variance_silence_duration,
+        num_activities, mean_activity_duration, variance_activity_duration,
+        bytes_std_dev, tcp_ratio, quic_ratio,
+        mean_window, median_window, std_dev_window
+    ))
+    return features
 
 def seqObsWindow(data,lengthObsWindow):
     iobs=0
@@ -150,6 +194,8 @@ def main():
         print(features)
         print(fname)
         np.savetxt(fname,features,fmt='%d')
+    else:
+        raise ValueError("Method not implemented yet")
             
         
 

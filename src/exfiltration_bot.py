@@ -18,6 +18,16 @@ intents = discord.Intents.default()
 # Client for the bot
 client = discord.Client(intents=intents)
 
+def split_file(file_path, chunk_size=MAX_FILE_SIZE):
+    with open(file_path, 'rb') as f:
+        chunk_number = 0
+        while chunk := f.read(chunk_size):
+            with open(f"{file_path}.part{chunk_number}", 'wb') as chunk_file:
+                chunk_file.write(chunk)
+            chunk_number += 1
+    print(f"File split into {chunk_number} parts.")
+
+
 @client.event
 async def on_ready():
     print(f'Bot {client.user} has connected to Discord!')
@@ -31,7 +41,14 @@ async def on_ready():
     # Send the attachment
     try:
         with open(FILE_PATH, "rb") as file:
-            await channel.send("Here is your attachment:", file=discord.File(file))
+            if os.path.getsize(FILE_PATH) > MAX_FILE_SIZE:
+                split_file(FILE_PATH)
+                for part in os.listdir():
+                    if part.startswith(FILE_PATH) and part != FILE_PATH:
+                        await channel.send("Here is your attachment:", file=discord.File(part))
+                        os.remove(part)
+            else:
+                await channel.send("Here is your attachment:", file=discord.File(file))
         print(f"SUCCESS: Attachment {FILE_PATH} was sent successfully.")
     except FileNotFoundError:
         print(f"ERROR: File not found at {FILE_PATH}. Check the file path.")

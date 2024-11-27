@@ -48,7 +48,7 @@ Some examples of data exfiltration using Discord:
 - Protocols Used for communication: `TCP`
   - Destination Port(s): TCP/80 and TCP/443
   - Source Port(s): UDP/50000-65535
-- Protocols Used for voice communication: `QUIC`
+- Protocols Used for voice-communication/attachments: `QUIC`
 
 > [!NOTE]
 > Additional information to look for:
@@ -66,6 +66,7 @@ To perform the analysis, the following data will be extracted:
 - Group and Private Conversations – the conversation type is obtained at the packet level (uploads/downloads)
 - Daily and Weekly message flow with various formats of files – analyzing the timestamps of interactions (uploads/downloads)
 
+> [!IMPORTANT]
 > We need, at least, 1M Flows
 
 ### Collection
@@ -116,6 +117,9 @@ Malicious Behavior: It will be done using tree types of bots:
   - Size: 1-10MB
   - Frequency: Same variance as a normal behavior
 - Hard (almost impossible) to Detect: Through embedded images, using Discord CDN
+
+> [!NOTE]
+> Command to make random files: `dd if=/dev/urandom of=file.txt bs=1M count=10` (10MB)
 
 ### Tasks to be done
 
