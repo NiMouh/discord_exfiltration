@@ -2,14 +2,20 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
+import asyncio
+from random import random
 
 def get_token() -> str:
     load_dotenv()
+
+    if 'DISCORD_TOKEN' not in os.environ:
+        raise ValueError("DISCORD_TOKEN not found in environment variables.")
+
     return os.getenv('DISCORD_TOKEN')
 
 TOKEN = get_token()
-CHANNEL_ID = 1300145995014865053  # Example: 987654321098765432
-FILE_PATH = "teste.txt"  # Replace with the actual file path
+CHANNEL_ID = 1300145995014865053  # Replace with the actual channel ID
+PATH = "data"  # Replace with the actual file path
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 # Intents (use default since we don't need privileged intents here)
@@ -27,7 +33,6 @@ def split_file(file_path, chunk_size=MAX_FILE_SIZE):
             chunk_number += 1
     print(f"File split into {chunk_number} parts.")
 
-
 @client.event
 async def on_ready():
     print(f'Bot {client.user} has connected to Discord!')
@@ -37,23 +42,33 @@ async def on_ready():
     if channel is None:
         print("Channel not found. Make sure the CHANNEL_ID is correct.")
         return
+    
+    if not os.path.exists(PATH):
+        print(f"ERROR: Path {PATH} does not exist.")
+        return
 
-    # Send the attachment
-    try:
-        with open(FILE_PATH, "rb") as file:
-            if os.path.getsize(FILE_PATH) > MAX_FILE_SIZE:
-                split_file(FILE_PATH)
-                for part in os.listdir():
-                    if part.startswith(FILE_PATH) and part != FILE_PATH:
-                        await channel.send("Here is your attachment:", file=discord.File(part))
-                        os.remove(part)
+    sleep_interval = [20, 40]
+
+    # Send every file in the directory PATH, but if the file is larger than 10 MB, split it
+    for file in os.listdir(PATH):
+        file_path = os.path.join(PATH, file)
+        if os.path.isfile(file_path):
+            if os.path.getsize(file_path) <= MAX_FILE_SIZE:
+                await channel.send("Here is your attachment:", file=discord.File(file_path))
+                print(f"Sent {file_path}")
+                # Sleep for a random interval between sleep_interval[0] and sleep_interval[1]
+                await asyncio.sleep(sleep_interval[0] + (sleep_interval[1] - sleep_interval[0]) * random())
             else:
-                await channel.send("Here is your attachment:", file=discord.File(file))
-        print(f"SUCCESS: Attachment {FILE_PATH} was sent successfully.")
-    except FileNotFoundError:
-        print(f"ERROR: File not found at {FILE_PATH}. Check the file path.")
-    except Exception as e:
-        print(f"ERROR: {e}")
+                split_file(file_path)
+                for part in os.listdir(PATH):
+                    part_path = os.path.join(PATH, part)
+                    if part.startswith(file + ".part"):
+                        await channel.send("Here is your attachment:", file=discord.File(part_path))
+                        print(f"Sent {part_path}")
+                        os.remove(part_path)
+                        # Sleep for a random interval between sleep_interval[0] and sleep_interval[1]
+                        await asyncio.sleep(sleep_interval[0] + (sleep_interval[1] - sleep_interval[0]) * random())
+    print("All files sent successfully.")
 
 # Run the bot
 client.run(TOKEN)

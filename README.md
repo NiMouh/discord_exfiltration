@@ -41,7 +41,7 @@ Some examples of data exfiltration using Discord:
 
 ### Filtering
 
-- Network Pool: `162.159.0.0/16`
+- Network Pool: `162.159.0.0/16` - Cloudflare IPs
 
 > Reference: [NsLookup.io](https://www.nslookup.io/domains/discordapp.com/webservers/)
 
@@ -91,24 +91,34 @@ We are going to focus on flow data, where it has the following fields:
 - Data Flow Start/End Timestamp (in seconds)
 - IP Protocol Number
 
-In order to convert our qualitative data into quantitive data, we chosed to use observation windows of 0.1 seconds and 1 second
+In order to convert our qualitative data into quantitive data, we chosen a sampling interval of 1 second.
 
 > This allows a balance between the level of detail needed to capture relevant events and the volume of data generated
 
-- Mean and Standard Deviation of idle times: Unusual gaps or consistency between flows.
-- Number of flows: Indicating irregular usage patterns.
-- Size of exchanged data (Mean/Variance): Changes in data size can point to unexpected or secretive data transfers.
-  - Up/Down
-- Durations of Flows
+This metrics obtained in the sampling interval are:
+
+- Download/Upload Size of TCP Packets
+- Download/Upload Size of QUIC Packets
+
+> In the following order: `tcp_upload_packets, tcp_upload_bytes, quic_upload_packets, quic_upload_bytes, tcp_download_packets, tcp_download_bytes, quic_download_packets, quic_download_bytes`
+
+### Feature Extraction
+
+This function extracts the following features:
+
+- Variance of silence and activity times
+- Ratio between upload and download bytes for TCP and QUIC (separately)
+- Mean, median and standard deviation of total bytes
+- Mean, median and standard deviation of number of packets
 
 ### Production
 
-Benign Behavior: It will be done by performing normal usage of the application, made by:
+**Benign Behavior:** It will be done by performing normal usage of the application, made by:
 
 - Humans: sending messages and files as usual
 - Bots: made by plugins added to the server
 
-Malicious Behavior: It will be done using tree types of bots:
+**Malicious Behavior:** It will be done using tree types of bots:
 
 - Easy to Detect:
   - Size: 10MB
@@ -120,6 +130,8 @@ Malicious Behavior: It will be done using tree types of bots:
 
 > [!NOTE]
 > Command to make random files: `dd if=/dev/urandom of=file.txt bs=1M count=10` (10MB)
+
+The files used in the exfiltration process will be located in the `data` folder.
 
 ### Tasks to be done
 

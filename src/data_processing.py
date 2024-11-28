@@ -9,6 +9,7 @@ import os
 def extractStats(data):
     nSamp=data.shape
     print(data)
+    print(nSamp)
 
     M1=np.mean(data,axis=0)
     Md1=np.median(data,axis=0)
@@ -47,8 +48,6 @@ def extractStatsAdv(data,threshold=0):
 
 def extractSilenceActivity(data,threshold=0):
 
-    # FIXME: combined_data = np.sum(data[:, [0, 2, 4, 6]], axis=1)
-
     if(data[0]<=threshold):
         s=[1]
         a=[]
@@ -66,46 +65,71 @@ def extractSilenceActivity(data,threshold=0):
             a[-1]+=1
     return(s,a)
 
-def extractStatsNew(data):
-    # Variância dos tempos de silêncio e atividade
-    silence_durations, activity_durations = extractSilenceActivity(data)
+def extractFeatures(data):
+    '''
+    Given the following data where every row is like this:
+    tcp_upload_packets, tcp_upload_bytes, quic_upload_packets, quic_upload_bytes, tcp_download_packets, tcp_download_bytes, quic_download_packets, quic_download_bytes
 
-    # Estatísticas de silêncio
-    num_silences = len(silence_durations)
+    This function extracts the following features:
+    - Mean and Variance of silence and activity times
+    - Ratio between upload and download bytes for TCP and QUIC (separately)
+    - Mean, median and standard deviation of total bytes
+    - Mean, median and standard deviation of number of packets
+
+    Note: Data shape is (300, 8)
+    '''
+
+    # Variance of silence and activity times (needs to be 1D)
+    silence_durations, activity_durations = extractSilenceActivity(data[:, 1] + data[:, 5] + data[:, 3] + data[:, 7])
+
+    # Silence statistics
     mean_silence_duration = np.mean(silence_durations) if silence_durations else 0
     variance_silence_duration = np.var(silence_durations) if silence_durations else 0
 
-    # Estatísticas de atividade
-    num_activities = len(activity_durations)
+    # Activity statistics
     mean_activity_duration = np.mean(activity_durations) if activity_durations else 0
     variance_activity_duration = np.var(activity_durations) if activity_durations else 0
 
-    # Desvio padrão do número de bytes totais
-    total_bytes = data[:, 1] + data[:, 5] + data[:, 3] + data[:, 7]
+    # Ratio between upload and download bytes for TCP and QUIC
+    download_sum = data[:, 5] + data[:, 7]
+    upload_sum = data[:, 1] + data[:, 3]
+
+    # Avoid division by zero
+    tcp_ratio = np.mean(np.divide(
+        upload_sum, 
+        download_sum, 
+        out=np.zeros_like(upload_sum, dtype=np.float64),  # Create float output array
+        where=download_sum > 0
+    ))
+
+    quic_ratio = np.mean(np.divide(
+        download_sum, 
+        upload_sum, 
+        out=np.zeros_like(download_sum, dtype=np.float64),  # Create float output array
+        where=upload_sum > 0
+    ))
+    # Mean, median and standard deviation of total bytes
+    total_bytes = data[:, 1] + data[:, 3] + data[:, 5] + data[:, 7]
+    bytes_mean = np.mean(total_bytes)
+    bytes_median = np.median(total_bytes)
     bytes_std_dev = np.std(total_bytes)
 
-    # Rácio de bytes enviados e recebidos (Upload/Download)
-    tcp_upload = data[:, 1]
-    tcp_download = data[:, 5]
-    quic_upload = data[:, 3]
-    quic_download = data[:, 7]
-    
-    tcp_ratio = np.mean(tcp_upload / tcp_download) if np.any(tcp_download) else np.inf
-    quic_ratio = np.mean(quic_upload / quic_download) if np.any(quic_download) else np.inf
+    # Mean, median and standard deviation of number of packets
+    packets = data[:, 0] + data[:, 2] + data[:, 4] + data[:, 6]
+    packets_mean = np.mean(packets)
+    packets_median = np.median(packets)
+    packets_std_dev = np.std(packets)
 
-    # Estatísticas da janela de observação
-    mean_window = np.mean(data, axis=0)
-    median_window = np.median(data, axis=0)
-    std_dev_window = np.std(data, axis=0)
-
-    # Combina todas as estatísticas em um único vetor
     features = np.hstack((
-        num_silences, mean_silence_duration, variance_silence_duration,
-        num_activities, mean_activity_duration, variance_activity_duration,
-        bytes_std_dev, tcp_ratio, quic_ratio,
-        mean_window, median_window, std_dev_window
+        mean_silence_duration, variance_silence_duration,
+        mean_activity_duration, variance_activity_duration,
+        bytes_std_dev, bytes_mean, bytes_median,
+        tcp_ratio, quic_ratio,
+        packets_mean, packets_median, packets_std_dev
     ))
+
     return features
+
 
 def seqObsWindow(data,lengthObsWindow):
     iobs=0
@@ -139,7 +163,8 @@ def slidingObsWindow(data,lengthObsWindow,slidingValue):
         else:
             allFeatures=np.vstack((allFeatures,obsFeatures))
     return(allFeatures)
-        
+
+
 def slidingMultObsWindow(data,allLengthsObsWindow,slidingValue):
     iobs=0
     nSamples,nMetrics=data.shape
@@ -147,7 +172,8 @@ def slidingMultObsWindow(data,allLengthsObsWindow,slidingValue):
         obsFeatures=np.array([])
         for lengthObsWindow in allLengthsObsWindow:
             for m in np.arange(nMetrics):
-                wmFeatures=extractStats(data[iobs*slidingValue:iobs*slidingValue+lengthObsWindow,m])
+                # OLDER FEATURES: wmFeatures=extractStats(data[iobs*slidingValue:iobs*slidingValue+lengthObsWindow,m])
+                wmFeatures=extractFeatures(data[iobs*slidingValue:iobs*slidingValue+lengthObsWindow])
                 obsFeatures=np.hstack((obsFeatures,wmFeatures))
             iobs+=1
         
@@ -156,6 +182,7 @@ def slidingMultObsWindow(data,allLengthsObsWindow,slidingValue):
         else:
             allFeatures=np.vstack((allFeatures,obsFeatures))
     return(allFeatures)
+
 
 def main():
     parser=argparse.ArgumentParser()
