@@ -171,11 +171,10 @@ def slidingMultObsWindow(data,allLengthsObsWindow,slidingValue):
     while iobs*slidingValue<nSamples-max(allLengthsObsWindow):
         obsFeatures=np.array([])
         for lengthObsWindow in allLengthsObsWindow:
-            for m in np.arange(nMetrics):
-                # OLDER FEATURES: wmFeatures=extractStats(data[iobs*slidingValue:iobs*slidingValue+lengthObsWindow,m])
-                wmFeatures=extractFeatures(data[iobs*slidingValue:iobs*slidingValue+lengthObsWindow])
-                obsFeatures=np.hstack((obsFeatures,wmFeatures))
-            iobs+=1
+            # OLDER FEATURES: wmFeatures=extractStats(data[iobs*slidingValue:iobs*slidingValue+lengthObsWindow,m])
+            wmFeatures=extractFeatures(data[iobs*slidingValue:iobs*slidingValue+lengthObsWindow])
+            obsFeatures=np.hstack((obsFeatures,wmFeatures))
+        iobs+=1
         
         if 'allFeatures' not in locals():
             allFeatures=obsFeatures.copy()
@@ -220,7 +219,7 @@ def main():
         features=slidingMultObsWindow(data,lengthObsWindow,slidingValue)
         print(features)
         print(fname)
-        np.savetxt(fname,features,fmt='%d')
+        np.savetxt(fname,features,fmt='%.3f')
     else:
         raise ValueError("Method not implemented yet")
             
