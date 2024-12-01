@@ -41,7 +41,7 @@ Some examples of data exfiltration using Discord:
 
 ### Filtering
 
-- **Network Pool:** `162.159.0.0/16` - Cloudflare IPs
+- **Network Pool:** `162.159.0.0/16` - Owned by Cloudflare, Inc.
 
 > Reference: [NsLookup.io](https://www.nslookup.io/domains/discordapp.com/webservers/)
 
@@ -63,63 +63,60 @@ Some examples of data exfiltration using Discord:
 
 To perform the analysis, the following data will be extracted:
 
-- Group and Private Conversations – the conversation type is obtained at the packet level (uploads/downloads)
-- Daily and Weekly message flow with various formats of files – analyzing the timestamps of interactions (uploads/downloads)
-
-> [!IMPORTANT]
-> We need, at least, 1M Flows
+- **Group and Private Conversations** – the conversation type is obtained at the packet level (uploads/downloads)
+- **Daily and Weekly message flow with various formats of files** – analyzing the timestamps of interactions (uploads/downloads)
 
 ### Collection
 
-In a testing context we are going to use:
+In a **testing context** we are going to use:
 
-- Wireshark: For network analysis
-- Burp Suite: Proxy tools for traffic capturing
+- **Wireshark:** For network analysis
+- **Burp Suite:** Proxy tools for traffic capturing
 
-But in a real life context, we could use:
+But in a **real life** context, we could use:
 
-- Syslog and Agents: To obtain data from endpoints and discord activity
-- Suricata or Palo Alto Networks Firewalls: To monitor ports and protocols in use, e.g. TCP and QUIC, and detect unusual or unauthorized traffic.
+- **Syslog and Agents:** To obtain data from endpoints and discord activity
+- **Suricata or Palo Alto Networks Firewalls:** To monitor ports and protocols in use, e.g. TCP and QUIC, and detect unusual or unauthorized traffic.
 
 ### Sampling and Processing
 
-We are going to focus on flow data, where it has the following fields:
+We are going to focus on **packet data**, since there's **no abundance of flows used**, where it has the following fields:
 
-- IP Source
-- IP Destination
-- Size of Exchanged Data
-- Data Flow Start/End Timestamp (in seconds)
-- IP Protocol Number
+- **IP Source**
+- **IP Destination**
+- **Packet Size (in bytes)**
+- **Packet Timestamp (in seconds)**
+- **IP Protocol Number**
 
-In order to convert our qualitative data into quantitive data, we chosen a sampling interval of 1 second.
+In order to convert our **qualitative** data into **quantitive** data, we chosen a **sampling interval of 1 second**.
 
 > This allows a balance between the level of detail needed to capture relevant events and the volume of data generated
 
 This metrics obtained in the sampling interval are:
 
-- Download/Upload Size of TCP Packets (in bytes)
-- Download/Upload Size of QUIC Packets (in bytes)
-- Download/Upload Number of TCP Packets
-- Download/Upload Number of QUIC Packets
+- **Download/Upload Size of TCP Packets (in bytes)**
+- **Download/Upload Size of QUIC Packets (in bytes)**
+- **Download/Upload Number of TCP Packets**
+- **Download/Upload Number of QUIC Packets**
 
 > In the following order: `tcp_upload_packets, tcp_upload_bytes, quic_upload_packets, quic_upload_bytes, tcp_download_packets, tcp_download_bytes, quic_download_packets, quic_download_bytes`
 
 This is the command to sample the data (with a sampling interval of 1 second), given the `discord_capture.pcap` file:
 
 ```bash
-python data_sampling.py -f 3 -i discord_capture.pcap -o <output_file> -d 1 -c <client_network_pool> -s 0.0.0.0/0
+python data_sampling.py --format 3 --input discord_capture.pcap --output <output_file> --delta 1 --cnet <client_network_pool> --snet 0.0.0.0/0
 ```
 
 ### Feature Extraction
 
 This function extracts the following features:
 
-- Variance of silence and activity times
-- Ratio between upload and download bytes for TCP and QUIC (separately)
-- Mean, median and standard deviation of total bytes
-- Mean, median and standard deviation of number of packets
+- **Mean and Variance of silence and activity times**
+- **Mean, median and standard deviation of upload and download bytes for TCP and QUIC (separately)**
+- **Mean, median and standard deviation of total bytes**
+- **Mean, median and standard deviation of number of packets**
 
-This is the command to extract the features using the multi-slide observation window (observation window of 5 minutes width and window slide of 1 minute), given the `output_file.txt` file:
+This is the command to extract the features using the multi-slide observation window (observation window of **5 minutes width** and window **slide of 1 minute**), given the `output_file.txt` file:
 
 ```bash
 python data_processing.py -i output_file.txt --method 3 --width 300 --slide 60
@@ -166,6 +163,27 @@ The files used in the exfiltration process will be located in the `data` folder.
 ## Phase 2: Project Development
 
 ### Project Structure
+
+```bash
+.
+├── presentation (slides)
+│
+├── src
+│   ├── .env (file with the Discord Token)
+│   ├── data_sampling.py (script to sample the data)
+│   ├── data_processing.py (script to extract the features)
+│   ├── exfiltration_bot.py
+│   ├── model.py
+│   └── requirements.txt
+│
+└── README.md
+```
+
+### Model Selection
+
+- [ ] Isolation Forest
+- [ ] One-Class SVM
+- [ ] Autoencoder
 
 ### Bot Creation
 
