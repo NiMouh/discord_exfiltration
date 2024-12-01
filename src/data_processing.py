@@ -72,14 +72,14 @@ def extractFeatures(data):
 
     This function extracts the following features:
     - Mean and Variance of silence and activity times
-    - Ratio between upload and download bytes for TCP and QUIC (separately)
+    - Mean, median and standard deviation of upload and download bytes for TCP and QUIC (separately)
     - Mean, median and standard deviation of total bytes
     - Mean, median and standard deviation of number of packets
 
     Note: Data shape is (300, 8)
     '''
 
-    # Variance of silence and activity times (needs to be 1D)
+    # Variance of silence and activity times (needs to be 1D) - FIXME: Threshold to be defined
     silence_durations, activity_durations = extractSilenceActivity(data[:, 1] + data[:, 5] + data[:, 3] + data[:, 7])
 
     # Silence statistics
@@ -90,24 +90,27 @@ def extractFeatures(data):
     mean_activity_duration = np.mean(activity_durations) if activity_durations else 0
     variance_activity_duration = np.var(activity_durations) if activity_durations else 0
 
-    # Ratio between upload and download bytes for TCP and QUIC
-    download_sum = data[:, 5] + data[:, 7]
-    upload_sum = data[:, 1] + data[:, 3]
+    # Mean, Median and Standard deviation of number of bytes (download and upload) for TCP and QUIC
+    tcp_upload_bytes = data[:, 1]
+    tcp_download_bytes = data[:, 5] 
+    quic_upload_bytes = data[:, 3]
+    quic_download_bytes = data[:, 7]
 
-    # Avoid division by zero
-    tcp_ratio = np.mean(np.divide(
-        upload_sum, 
-        download_sum, 
-        out=np.zeros_like(upload_sum, dtype=np.float64),  # Create float output array
-        where=download_sum > 0
-    ))
+    tcp_upload_bytes_std_dev = np.std(tcp_upload_bytes)
+    tcp_download_bytes_std_dev = np.std(tcp_download_bytes)
+    quic_upload_bytes_std_dev = np.std(quic_upload_bytes)
+    quic_download_bytes_std_dev = np.std(quic_download_bytes)
 
-    quic_ratio = np.mean(np.divide(
-        download_sum, 
-        upload_sum, 
-        out=np.zeros_like(download_sum, dtype=np.float64),  # Create float output array
-        where=upload_sum > 0
-    ))
+    tcp_upload_bytes_mean = np.mean(tcp_upload_bytes)
+    tcp_download_bytes_mean = np.mean(tcp_download_bytes)
+    quic_upload_bytes_mean = np.mean(quic_upload_bytes)
+    quic_download_bytes_mean = np.mean(quic_download_bytes)
+
+    tcp_upload_bytes_median = np.median(tcp_upload_bytes)
+    tcp_download_bytes_median = np.median(tcp_download_bytes)
+    quic_upload_bytes_median = np.median(quic_upload_bytes)
+    quic_download_bytes_median = np.median(quic_download_bytes)
+    
     # Mean, median and standard deviation of total bytes
     total_bytes = data[:, 1] + data[:, 3] + data[:, 5] + data[:, 7]
     bytes_mean = np.mean(total_bytes)
@@ -123,8 +126,10 @@ def extractFeatures(data):
     features = np.hstack((
         mean_silence_duration, variance_silence_duration,
         mean_activity_duration, variance_activity_duration,
-        bytes_std_dev, bytes_mean, bytes_median,
-        tcp_ratio, quic_ratio,
+        tcp_upload_bytes_std_dev, tcp_download_bytes_std_dev, quic_upload_bytes_std_dev, quic_download_bytes_std_dev,
+        tcp_upload_bytes_mean, tcp_download_bytes_mean, quic_upload_bytes_mean, quic_download_bytes_mean,
+        tcp_upload_bytes_median, tcp_download_bytes_median, quic_upload_bytes_median, quic_download_bytes_median,
+        bytes_mean, bytes_median, bytes_std_dev,
         packets_mean, packets_median, packets_std_dev
     ))
 
