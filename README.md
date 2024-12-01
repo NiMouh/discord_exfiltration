@@ -17,7 +17,7 @@
   
 #### Why is it difficult to solve?
 
-One of the biggest challenges in detecting data exfiltration via Discord is the fact that all communication is encrypted. When data is sent to a webhook, Discord uses HTTPS (HTTP over TLS), which means that the data is encrypted during transmission. This encryption makes it impossible for most network security devices, such as firewalls and Deep Packet Inspection (DPI) systems, which analyse individual packets to identify suspicious content, to directly inspect the content of the traffic. So, although it is possible to see that there is communication with Discord, it is not possible to analyse or filter the content of the data sent due to encryption, which makes this channel an ideal vehicle for exfiltrating data undetected.
+One of the biggest challenges in detecting data exfiltration via Discord is the fact that all communication is encrypted. When data is sent to a webhook, Discord uses HTTPS (HTTP over TLS), which means that the data is encrypted during transmission. This encryption makes it impossible for most network security devices, such as firewalls and Deep Packet Inspection (DPI) systems, which analyze individual packets to identify suspicious content, to directly inspect the content of the traffic. So, although it is possible to see that there is communication with Discord, it is not possible to analyze or filter the content of the data sent due to encryption, which makes this channel an ideal vehicle for exfiltrating data undetected.
 
 Firewalls and SIEM systems based on fixed rules face a critical limitation here. Without access to the encrypted content of the packets, these systems can only monitor basic metadata, such as the destination IP address, the port, and the volume of data. However, as Discord is widely used and permitted on many corporate networks, this traffic appears legitimate and doesn't immediately raise suspicions.
 
@@ -35,20 +35,20 @@ Some examples of data exfiltration using Discord:
 
 ### Discovery
 
-- It has a built-in function that enables automated messages sent to a text channel in the server (Webhooks)
-- Allows the upload of a variety file types (e.g. PNG, PDF, MP4)
-- The maximum file upload is 10MB
+- It has a built-in function that enables automated messages sent to a text channel in the server (Webhooks) and a API for bot creation (discord.py).
+- Allows the upload of a variety file types (e.g. PNG, PDF, MP4).
+- The **maximum file upload** is 10MB.
 
 ### Filtering
 
-- Network Pool: `162.159.0.0/16` - Cloudflare IPs
+- **Network Pool:** `162.159.0.0/16` - Cloudflare IPs
 
 > Reference: [NsLookup.io](https://www.nslookup.io/domains/discordapp.com/webservers/)
 
-- Protocols Used for communication: `TCP`
-  - Destination Port(s): TCP/80 and TCP/443
-  - Source Port(s): UDP/50000-65535
-- Protocols Used for voice-communication/attachments: `QUIC`
+- **Protocols Used for communication:** `TCP`
+  - **Destination Port(s):** TCP/80 and TCP/443
+  - **Source Port(s):** UDP/50000-65535
+- **Protocols Used for voice-communication/attachments:** `QUIC`
 
 > [!NOTE]
 > Additional information to look for:
@@ -97,10 +97,18 @@ In order to convert our qualitative data into quantitive data, we chosen a sampl
 
 This metrics obtained in the sampling interval are:
 
-- Download/Upload Size of TCP Packets
-- Download/Upload Size of QUIC Packets
+- Download/Upload Size of TCP Packets (in bytes)
+- Download/Upload Size of QUIC Packets (in bytes)
+- Download/Upload Number of TCP Packets
+- Download/Upload Number of QUIC Packets
 
 > In the following order: `tcp_upload_packets, tcp_upload_bytes, quic_upload_packets, quic_upload_bytes, tcp_download_packets, tcp_download_bytes, quic_download_packets, quic_download_bytes`
+
+This is the command to sample the data (with a sampling interval of 1 second), given the `discord_capture.pcap` file:
+
+```bash
+python data_sampling.py -f 3 -i discord_capture.pcap -o <output_file> -d 1 -c <client_network_pool> -s 0.0.0.0/0
+```
 
 ### Feature Extraction
 
@@ -110,6 +118,18 @@ This function extracts the following features:
 - Ratio between upload and download bytes for TCP and QUIC (separately)
 - Mean, median and standard deviation of total bytes
 - Mean, median and standard deviation of number of packets
+
+This is the command to extract the features using the multi-slide observation window (observation window of 5 minutes width and window slide of 1 minute), given the `output_file.txt` file:
+
+```bash
+python data_processing.py -i output_file.txt --method 3 --width 300 --slide 60
+```
+
+> [!IMPORTANT]
+> Threshold of silence activity (number of packets) is tbh.
+
+> [!NOTE]
+> Since the sampling interval is 1 second, the width and slide of the observation window are given in seconds
 
 ### Production
 
@@ -135,13 +155,21 @@ The files used in the exfiltration process will be located in the `data` folder.
 
 ### Tasks to be done
 
-POR COLOCAR AQUI
+- [x] Problem Brainstorm
+- [ ] Data Collection
+- [x] Define the Features
+- [ ] Data Processing
+- [ ] Choose the Models and define the parameters
+- [ ] Model Training
+- [ ] Model Evaluation
 
 ## Phase 2: Project Development
 
 ### Project Structure
 
 ### Bot Creation
+
+References:
 
 - Portal to build the bot: <https://discord.com/developers/applications>
 - Tutorial in python: <https://www.youtube.com/watch?v=UYJDKSah-Ww>
@@ -164,4 +192,10 @@ venv\Scripts\activate
 
 ```bash
 pip install -r requirements.txt
+```
+
+4. Add the `DISCORD_TOKEN` in the `.env` file:
+
+```bash
+echo "DISCORD_TOKEN=<your_token>" > .env
 ```
