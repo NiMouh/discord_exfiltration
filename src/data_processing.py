@@ -20,32 +20,6 @@ def extractStats(data):
     features=np.hstack((M1,Md1,Std1))
     return(features)
 
-def extractStatsAdv(data,threshold=0):
-    nSamp=data.shape
-    print(data)
-
-    M1=np.mean(data,axis=0)
-    Md1=np.median(data,axis=0)
-    Std1=np.std(data,axis=0)
-#   p=[75,90,95,98]
-#   Pr1=np.array(np.percentile(data,p,axis=0))
-
-    silence,activity=extractSilenceActivity(data,threshold)
-    
-    if len(silence)>0:
-        silence_faux=np.array([len(silence),np.mean(silence),np.std(silence)])
-    else:
-        silence_faux=np.zeros(3)
-        
-    # if len(activity)>0:
-        # activity_faux=np.array([len(activity),np.mean(activity),np.std(activity)])
-    # else:
-        # activity_faux=np.zeros(3)
-    # activity_features=np.hstack((activity_features,activity_faux))  
-    
-    features=np.hstack((M1,Md1,Std1,silence_faux))
-    return(features)
-
 def extractSilenceActivity(data,threshold=0):
 
     if(data[0]<=threshold):
@@ -70,13 +44,7 @@ def extractFeatures(data):
     Given the following data where every row is like this:
     tcp_upload_packets, tcp_upload_bytes, quic_upload_packets, quic_upload_bytes, tcp_download_packets, tcp_download_bytes, quic_download_packets, quic_download_bytes
 
-    This function extracts the following features:
-    - Mean and Variance of silence and activity times
-    - Mean, median and standard deviation of upload and download bytes for TCP and QUIC (separately)
-    - Mean, median and standard deviation of total bytes
-    - Mean, median and standard deviation of number of packets
-
-    Note: Data shape is (300, 8)
+    Note: Data shape is (Window Size, Number of Metrics)
     '''
 
     # Variance of silence and activity times (needs to be 1D) - FIXME: Threshold to be defined
