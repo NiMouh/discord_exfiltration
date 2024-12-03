@@ -1,8 +1,8 @@
+import os
+import asyncio
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-import os
-import asyncio
 from random import random
 
 def get_token() -> str:
@@ -16,7 +16,7 @@ def get_token() -> str:
 TOKEN = get_token()
 CHANNEL_ID = 1300145995014865053  # Replace with the actual channel ID
 PATH = "data"  # Replace with the actual file path
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+DISCORD_MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 # Intents (use default since we don't need privileged intents here)
 intents = discord.Intents.default()
@@ -24,7 +24,7 @@ intents = discord.Intents.default()
 # Client for the bot
 client = discord.Client(intents=intents)
 
-def split_file(file_path, chunk_size=MAX_FILE_SIZE):
+def split_file(file_path : str, chunk_size : int = DISCORD_MAX_FILE_SIZE) -> None:
     with open(file_path, 'rb') as f:
         chunk_number = 0
         while chunk := f.read(chunk_size):
@@ -47,28 +47,60 @@ async def on_ready():
         print(f"ERROR: Path {PATH} does not exist.")
         return
 
-    sleep_interval = [20, 40]
+    # Configurations
+    sleep_interval_seconds = [20, 40]  # Normal interval between sending files
+    batch_interval_seconds = 120  # Longer interval after reaching max files
+    max_files_per_batch = 5  # Maximum files to send before taking a longer break
 
-    # Send every file in the directory PATH, but if the file is larger than 10 MB, split it
+    async def send_file(file_path):
+        """Handles sending a single file to the channel."""
+        await channel.send("Here is your attachment:", file=discord.File(file_path))
+        print(f"Sent {file_path}")
+
+    async def handle_batch(file_paths):
+        """Handles sending files with batching logic."""
+        files_sent = 0
+        for file_path in file_paths:
+
+            await send_file(file_path)
+            files_sent += 1
+
+            if files_sent >= max_files_per_batch:
+                print(f"Batch limit reached. Sleeping for {batch_interval_seconds} seconds...")
+                await asyncio.sleep(batch_interval_seconds)
+                files_sent = 0  # Reset the counter
+                continue
+
+            await asyncio.sleep(sleep_interval_seconds[0] + (sleep_interval_seconds[1] - sleep_interval_seconds[0]) * random())
+
+    # Gather all files to send
+    file_paths = []
     for file in os.listdir(PATH):
         file_path = os.path.join(PATH, file)
-        if os.path.isfile(file_path):
-            if os.path.getsize(file_path) <= MAX_FILE_SIZE:
-                await channel.send("Here is your attachment:", file=discord.File(file_path))
-                print(f"Sent {file_path}")
-                # Sleep for a random interval between sleep_interval[0] and sleep_interval[1]
-                await asyncio.sleep(sleep_interval[0] + (sleep_interval[1] - sleep_interval[0]) * random())
-            else:
-                split_file(file_path)
-                for part in os.listdir(PATH):
-                    part_path = os.path.join(PATH, part)
-                    if part.startswith(file + ".part"):
-                        await channel.send("Here is your attachment:", file=discord.File(part_path))
-                        print(f"Sent {part_path}")
-                        os.remove(part_path)
-                        # Sleep for a random interval between sleep_interval[0] and sleep_interval[1]
-                        await asyncio.sleep(sleep_interval[0] + (sleep_interval[1] - sleep_interval[0]) * random())
-    print("All files sent successfully.")
+        if not os.path.isfile(file_path):
+            continue
+
+        if os.path.getsize(file_path) > DISCORD_MAX_FILE_SIZE:
+            # Split large files and add the parts
+            split_file(file_path)
+            for part in os.listdir(PATH):
+                part_path = os.path.join(PATH, part)
+                if not part.startswith(file + ".part"):
+                    continue
+                file_paths.append(part_path)
+            continue
+
+        file_paths.append(file_path)
+
+    # Send all files
+    await handle_batch(file_paths)
+
+    # Cleanup split files
+    for file_path in file_paths:
+        if file_path.endswith(".part"):
+            os.remove(file_path)
+
+    print(f"All files from {PATH} have been sent.")
 
 # Run the bot
 client.run(TOKEN)
