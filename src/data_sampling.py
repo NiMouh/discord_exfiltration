@@ -33,17 +33,17 @@ def pktHandler(timestamp, srcIP, dstIP, lengthIP, protocol, sampDelta, outfile):
             if protocol == "TCP":
                 outc[0] += 1  # TCP upload packet count
                 outc[1] += int(lengthIP)  # TCP upload data size
-            elif protocol == "QUIC":
-                outc[2] += 1  # QUIC upload packet count
-                outc[3] += int(lengthIP)  # QUIC upload data size
+            elif protocol == "UDP":
+                outc[2] += 1  # UDP upload packet count
+                outc[3] += int(lengthIP)  # UDP upload data size
 
         if IPAddress(dstIP) in scnets:  # Download
             if protocol == "TCP":
                 outc[4] += 1  # TCP download packet count
                 outc[5] += int(lengthIP)  # TCP download data size
-            elif protocol == "QUIC":
-                outc[6] += 1  # QUIC download packet count
-                outc[7] += int(lengthIP)  # QUIC download data size
+            elif protocol == "UDP":
+                outc[6] += 1  # UDP download packet count
+                outc[7] += int(lengthIP)  # UDP download data size
         
         last_ks = ks
         npkts += 1
@@ -106,7 +106,7 @@ def main():
     global last_ks
 
     npkts = 0
-    outc = [0, 0, 0, 0, 0, 0, 0, 0]  # Separate counters for TCP and QUIC
+    outc = [0, 0, 0, 0, 0, 0, 0, 0]  # Separate counters for TCP and UDP
     outfile = open(fileOutput, 'w') 
 
     if fileFormat in [1, 2]:
@@ -123,10 +123,7 @@ def main():
     elif fileFormat == 3:  # pcap format
         capture = pyshark.FileCapture(fileInput, display_filter='ip')
         for pkt in capture:
-            protocol = pkt.transport_layer
-            if protocol not in ["TCP", "QUIC"]:
-                continue  # Skip packets that are neither TCP nor QUIC
-            timestamp, srcIP, dstIP, lengthIP = pkt.sniff_timestamp, pkt.ip.src, pkt.ip.dst, pkt.ip.len
+            timestamp, srcIP, dstIP, lengthIP, protocol = pkt.sniff_timestamp, pkt.ip.src, pkt.ip.dst, pkt.ip.len, pkt.transport_layer
             pktHandler(timestamp, srcIP, dstIP, lengthIP, protocol, sampDelta, outfile)
     
     outfile.close()

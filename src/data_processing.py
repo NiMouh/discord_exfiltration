@@ -42,13 +42,17 @@ def extractSilenceActivity(data,threshold=0):
 def extractFeatures(data):
     '''
     Given the following data where every row is like this:
-    tcp_upload_packets, tcp_upload_bytes, quic_upload_packets, quic_upload_bytes, tcp_download_packets, tcp_download_bytes, quic_download_packets, quic_download_bytes
+    tcp_upload_packets, tcp_upload_bytes, udp_upload_packets, udp_upload_bytes, tcp_download_packets, tcp_download_bytes, udp_download_packets, udp_download_bytes
 
     Note: Data shape is (Window Size, Number of Metrics)
     '''
 
-    # Variance of silence and activity times (needs to be 1D) - FIXME: Threshold to be defined
-    silence_durations, activity_durations = extractSilenceActivity(data[:, 1] + data[:, 5] + data[:, 3] + data[:, 7])
+    # Quartiles and percentiles interval
+    quartiles = [30, 60, 90]
+    percentiles = [95, 98]
+
+    # Variance of silence and activity times (needs to be 1D)
+    silence_durations, activity_durations = extractSilenceActivity(data[:, 0] + data[:, 2] + data[:, 4] + data[:, 6], threshold=2)
 
     # Silence statistics
     mean_silence_duration = np.mean(silence_durations) if silence_durations else 0
@@ -57,48 +61,46 @@ def extractFeatures(data):
     # Activity statistics
     mean_activity_duration = np.mean(activity_durations) if activity_durations else 0
     variance_activity_duration = np.var(activity_durations) if activity_durations else 0
+    quartiles_activity_duration = np.array(np.percentile(activity_durations, quartiles)) if activity_durations else np.zeros(len(quartiles))
 
-    # Mean, Median and Standard deviation of number of bytes (download and upload) for TCP and QUIC
+    # Mean and Standard deviation of number of bytes (download and upload) for TCP and udp
     tcp_upload_bytes = data[:, 1]
     tcp_download_bytes = data[:, 5] 
-    quic_upload_bytes = data[:, 3]
-    quic_download_bytes = data[:, 7]
+    udp_upload_bytes = data[:, 3]
+    udp_download_bytes = data[:, 7]
 
     tcp_upload_bytes_std_dev = np.std(tcp_upload_bytes)
     tcp_download_bytes_std_dev = np.std(tcp_download_bytes)
-    quic_upload_bytes_std_dev = np.std(quic_upload_bytes)
-    quic_download_bytes_std_dev = np.std(quic_download_bytes)
+    udp_upload_bytes_std_dev = np.std(udp_upload_bytes)
+    udp_download_bytes_std_dev = np.std(udp_download_bytes)
 
     tcp_upload_bytes_mean = np.mean(tcp_upload_bytes)
     tcp_download_bytes_mean = np.mean(tcp_download_bytes)
-    quic_upload_bytes_mean = np.mean(quic_upload_bytes)
-    quic_download_bytes_mean = np.mean(quic_download_bytes)
+    udp_upload_bytes_mean = np.mean(udp_upload_bytes)
+    udp_download_bytes_mean = np.mean(udp_download_bytes)
 
-    tcp_upload_bytes_median = np.median(tcp_upload_bytes)
-    tcp_download_bytes_median = np.median(tcp_download_bytes)
-    quic_upload_bytes_median = np.median(quic_upload_bytes)
-    quic_download_bytes_median = np.median(quic_download_bytes)
+    # Quartiles of download and upload bytes
+    quartiles_upload_bytes = np.array(np.percentile(tcp_upload_bytes + udp_upload_bytes, percentiles))
+    quartiles_download_bytes = np.array(np.percentile(tcp_download_bytes + udp_download_bytes, percentiles))
     
-    # Mean, median and standard deviation of total bytes
+    # Mean and standard deviation of total bytes
     total_bytes = data[:, 1] + data[:, 3] + data[:, 5] + data[:, 7]
     bytes_mean = np.mean(total_bytes)
-    bytes_median = np.median(total_bytes)
     bytes_std_dev = np.std(total_bytes)
 
-    # Mean, median and standard deviation of number of packets
+    # Mean and standard deviation of number of packets
     packets = data[:, 0] + data[:, 2] + data[:, 4] + data[:, 6]
     packets_mean = np.mean(packets)
-    packets_median = np.median(packets)
     packets_std_dev = np.std(packets)
 
     features = np.hstack((
         mean_silence_duration, variance_silence_duration,
-        mean_activity_duration, variance_activity_duration,
-        tcp_upload_bytes_std_dev, tcp_download_bytes_std_dev, quic_upload_bytes_std_dev, quic_download_bytes_std_dev,
-        tcp_upload_bytes_mean, tcp_download_bytes_mean, quic_upload_bytes_mean, quic_download_bytes_mean,
-        tcp_upload_bytes_median, tcp_download_bytes_median, quic_upload_bytes_median, quic_download_bytes_median,
-        bytes_mean, bytes_median, bytes_std_dev,
-        packets_mean, packets_median, packets_std_dev
+        mean_activity_duration, variance_activity_duration, quartiles_activity_duration,
+        tcp_upload_bytes_std_dev, tcp_download_bytes_std_dev, udp_upload_bytes_std_dev, udp_download_bytes_std_dev,
+        tcp_upload_bytes_mean, tcp_download_bytes_mean, udp_upload_bytes_mean, udp_download_bytes_mean,
+        quartiles_upload_bytes, quartiles_download_bytes,
+        bytes_mean, bytes_std_dev,
+        packets_mean, packets_std_dev
     ))
 
     return features

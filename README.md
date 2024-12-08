@@ -95,38 +95,23 @@ In order to convert our **qualitative** data into **quantitive** data, we chosen
 This metrics obtained in the sampling interval are:
 
 - **Download/Upload Size of TCP Packets (in bytes)**
-- **Download/Upload Size of QUIC Packets (in bytes)**
+- **Download/Upload Size of UDP Packets (in bytes)**
 - **Download/Upload Number of TCP Packets**
-- **Download/Upload Number of QUIC Packets**
+- **Download/Upload Number of UDP Packets**
 
-> In the following order: `tcp_upload_packets, tcp_upload_bytes, quic_upload_packets, quic_upload_bytes, tcp_download_packets, tcp_download_bytes, quic_download_packets, quic_download_bytes`
-
-This is the command to sample the data (with a sampling interval of 1 second), given the `discord_capture.pcap` file:
-
-```bash
-python data_sampling.py --format 3 --input discord_capture.pcap --output <output_file> --delta 1 --cnet <client_network_pool> --snet 0.0.0.0/0
-```
+> In the following order: `tcp_upload_packets, tcp_upload_bytes, udp_upload_packets, udp_upload_bytes, tcp_download_packets, tcp_download_bytes, udp_download_packets, udp_download_bytes`
 
 ### Feature Extraction
 
 This function extracts the following features:
 
 - **Mean and Variance of silence and activity times**
-- **Mean, median and standard deviation of upload and download bytes for TCP and QUIC (separately)**
+- **Mean, median and standard deviation of upload and download bytes for TCP and UDP (separately)**
 - **Mean, median and standard deviation of total bytes**
 - **Mean, median and standard deviation of number of packets**
 
-This is the command to extract the features using the multi-slide observation window (observation window of **5 minutes width** and window **slide of 1 minute**), given the `output_file.txt` file:
-
-```bash
-python data_processing.py -i output_file.txt --method 3 --width 300 --slide 60
-```
-
 > [!IMPORTANT]
-> Threshold of silence activity (number of packets) is tbh.
-
-> [!NOTE]
-> Since the sampling interval is 1 second, the width and slide of the observation window are given in seconds
+> Threshold of silence activity (number of packets) is tbc.
 
 ### Production
 
@@ -192,7 +177,7 @@ References:
 - Portal to build the bot: <https://discord.com/developers/applications>
 - Tutorial in python: <https://www.youtube.com/watch?v=UYJDKSah-Ww>
 
-### How to Run Scripts in the "Source" Folder
+### Setting up the environment
 
 1. Add virtual environment:
 
@@ -215,5 +200,30 @@ pip install -r requirements.txt
 4. Add the `DISCORD_TOKEN` in the `.env` file:
 
 ```bash
-echo "DISCORD_TOKEN=<your_token>" > .env
+echo "DISCORD_TOKEN=<your_token>" >> .env
 ```
+
+### Running the bot
+
+```bash
+python exfiltration_bot.py
+```
+
+### Sampling the data
+
+This is the command to sample the data (with a sampling interval of 1 second), given the `discord_capture.pcap` file:
+
+```bash
+python data_sampling.py --format 3 --input discord_capture.pcap --output <output_file> --delta 1 --cnet <client_network_pool> --snet 0.0.0.0/0
+```
+
+### Extracting the features
+
+This is the command to extract the features using the multi-slide observation window (observation window of **5 minutes width** and window **slide of 1 minute**), given the `output_file.txt` file:
+
+```bash
+python data_processing.py --input output_file.txt --method 3 --width 300 --slide 60
+```
+
+> [!NOTE]
+> Since the sampling interval is 1 second, the width and slide of the observation window are given in seconds
