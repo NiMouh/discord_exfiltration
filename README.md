@@ -106,9 +106,11 @@ This metrics obtained in the sampling interval are:
 This function extracts the following features:
 
 - **Mean and Variance of silence and activity times**
-- **Mean, median and standard deviation of upload and download bytes for TCP and UDP (separately)**
-- **Mean, median and standard deviation of total bytes**
-- **Mean, median and standard deviation of number of packets**
+- **Mean, standard deviation and 25th, 50th and 75th quartiles of upload and download bytes for TCP and UDP (separately)**
+- **Mean and standard deviation of total bytes**
+- **Mean and standard deviation of number of packets**
+
+> In the following order: `mean_silence_duration, variance_silence_duration, mean_activity_duration, variance_activity_duration, quartiles_activity_duration,tcp_upload_bytes_std_dev, tcp_download_bytes_std_dev, udp_upload_bytes_std_dev, udp_download_bytes_std_dev,tcp_upload_bytes_mean, tcp_download_bytes_mean, udp_upload_bytes_mean, udp_download_bytes_mean,quartiles_upload_bytes, quartiles_download_bytes,bytes_mean, bytes_std_dev,packets_mean, packets_std_dev`
 
 > [!IMPORTANT]
 > Threshold of silence activity (number of packets) is tbc.
@@ -151,14 +153,16 @@ The files used in the exfiltration process will be located in the `data` folder.
 
 ```bash
 .
-├── presentation (slides)
+├── presentation/ (folder with the slides)
 │
-├── src
+├── src/
+│   ├── data/ (folder with the data to be exfiltrated)
+│   ├── tests/ (folder with the captured data)
 │   ├── .env (file with the Discord Token)
 │   ├── data_sampling.py (script to sample the data)
 │   ├── data_processing.py (script to extract the features)
 │   ├── exfiltration_bot.py
-│   ├── model.py
+│   ├── model.ipynb (notebook with the model selection)
 │   └── requirements.txt
 │
 └── README.md

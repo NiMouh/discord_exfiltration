@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from itertools import groupby
 import os
 
+quartiles = [30, 60, 90]
+percentiles = [95, 98]
 
 def extractStats(data):
     nSamp=data.shape
@@ -46,10 +48,6 @@ def extractFeatures(data):
 
     Note: Data shape is (Window Size, Number of Metrics)
     '''
-
-    # Quartiles and percentiles interval
-    quartiles = [30, 60, 90]
-    percentiles = [95, 98]
 
     # Variance of silence and activity times (needs to be 1D)
     silence_durations, activity_durations = extractSilenceActivity(data[:, 0] + data[:, 2] + data[:, 4] + data[:, 6], threshold=2)
@@ -173,9 +171,9 @@ def main():
         
     data=np.loadtxt(fileInput,dtype=int)
     if method==1:
-        fname=''.join(fileInput.split('.')[:-1])+"_features_m{}_w{}".format(method,lengthObsWindow)
+        fname=''.join(fileInput.split('.')[:-1])+"_features_m{}_w{}.csv".format(method,lengthObsWindow)
     else:
-        fname=''.join(fileInput.split('.')[:-1])+"_features_m{}_w{}_s{}".format(method,lengthObsWindow,slidingValue)
+        fname=''.join(fileInput.split('.')[:-1])+"_features_m{}_w{}_s{}.csv".format(method,lengthObsWindow,slidingValue)
     
     if method==1:
         print("\n\n### SEQUENTIAL Observation Windows with Length {} ###".format(lengthObsWindow[0]))
@@ -194,7 +192,33 @@ def main():
         features=slidingMultObsWindow(data,lengthObsWindow,slidingValue)
         print(features)
         print(fname)
-        np.savetxt(fname,features,fmt='%.3f')
+        columnsNames = ["mean_silence_duration", 
+                        "mean_silence_duration", 
+                       "variance_silence_duration", 
+                       "mean_activity_duration", 
+                       "variance_activity_duration", 
+                       f"{quartiles[0]}_quartile_activity_duration", 
+                       f"{quartiles[1]}_quartile_activity_duration", 
+                       f"{quartiles[2]}_quartile_activity_duration",
+                       "tcp_upload_bytes_std_dev", 
+                       "tcp_download_bytes_std_dev", 
+                       "udp_upload_bytes_std_dev", 
+                       "udp_download_bytes_std_dev",
+                       "tcp_upload_bytes_mean", 
+                       "tcp_download_bytes_mean", 
+                       "udp_upload_bytes_mean", 
+                       "udp_download_bytes_mean",
+                       f"{percentiles[0]}_percentile_upload_bytes", 
+                       f"{percentiles[1]}_percentile_upload_bytes", 
+                       f"{percentiles[0]}_percentile_download_bytes", 
+                       f"{percentiles[1]}_percentile_download_bytes",
+                       "bytes_mean", 
+                       "bytes_std_dev",
+                       "packets_mean", 
+                       "packets_std_dev"
+                       ]
+        np.savetxt(fname,features,fmt='%.3f',header="".join(columnsNames))
+        # np.savetxt(fname,features,fmt='%.3f')
     else:
         raise ValueError("Method not implemented yet")
             
