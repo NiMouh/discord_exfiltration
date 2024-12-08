@@ -193,7 +193,6 @@ def main():
         print(features)
         print(fname)
         columnsNames = ["mean_silence_duration", 
-                        "mean_silence_duration", 
                        "variance_silence_duration", 
                        "mean_activity_duration", 
                        "variance_activity_duration", 
@@ -217,8 +216,8 @@ def main():
                        "packets_mean", 
                        "packets_std_dev"
                        ]
-        np.savetxt(fname,features,fmt='%.3f',header="".join(columnsNames))
-        # np.savetxt(fname,features,fmt='%.3f')
+        header = ','.join(columnsNames)
+        np.savetxt(fname, features, fmt='%.3f', delimiter=',', header=header, comments='')
     else:
         raise ValueError("Method not implemented yet")
             
