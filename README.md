@@ -207,6 +207,8 @@ pip install -r requirements.txt
 echo "DISCORD_TOKEN=<your_token>" >> .env
 ```
 
+> The `.env` file should be in the `src` folder
+
 ### Running the bot
 
 ```bash
@@ -223,10 +225,10 @@ python data_sampling.py --format 3 --input discord_capture.pcap --output <output
 
 ### Extracting the features
 
-This is the command to extract the features using the multi-slide observation window (observation window of **5 minutes width** and window **slide of 1 minute**), given the `output_file.txt` file:
+This is the command to extract the features using the multi-slide observation window (observation window of **5 minutes width** and window **slide of 30 seconds**), given the `output_file.txt` file:
 
 ```bash
-python data_processing.py --input output_file.txt --method 3 --width 300 --slide 60
+python data_processing.py --input output_file.txt --method 3 --width 300 --slide 30
 ```
 
 > [!NOTE]
