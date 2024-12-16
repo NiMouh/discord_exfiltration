@@ -156,23 +156,19 @@ The files used in the exfiltration process will be located in the `data` folder.
 ├── presentation/ (folder with the slides)
 │
 ├── src/
-│   ├── data/ (folder with the data to be exfiltrated)
-│   ├── tests/ (folder with the captured data)
 │   ├── .env (file with the Discord Token)
 │   ├── data_sampling.py (script to sample the data)
 │   ├── data_processing.py (script to extract the features)
 │   ├── exfiltration_bot.py
 │   ├── model.ipynb (notebook with the model selection)
+│   ├── data/ (folder with the data to be exfiltrated)
+│   ├── captures/ (folder with the captured data)
+│   ├── samples/ (folder with the sampled data)
+│   ├── features/ (folder with the extracted features)
 │   └── requirements.txt
 │
 └── README.md
 ```
-
-### Model Selection
-
-- [ ] Isolation Forest
-- [ ] One-Class SVM
-- [ ] Autoencoder
 
 ### Bot Creation
 
@@ -211,9 +207,19 @@ echo "DISCORD_TOKEN=<your_token>" >> .env
 
 ### Running the bot
 
+To run the simpler version of the bot, that uses no prior behavior to exfiltrate data, run the following command:
+
 ```bash
-python exfiltration_bot.py
+python simple_exfiltration_bot.py
 ```
+
+To run the bot that uses the prior behavior to exfiltrate data, run the following command:
+
+```bash
+python complex_exfiltration_bot.py --input <input_file> 
+```
+
+Where the `<input_file>` is a CSV file with the packet capture data.
 
 ### Sampling the data
 
@@ -233,3 +239,23 @@ python data_processing.py --input output_file.txt --method 3 --width 300 --slide
 
 > [!NOTE]
 > Since the sampling interval is 1 second, the width and slide of the observation window are given in seconds
+
+### Detection using Machine Learning (Unsupervised Learning)
+
+#### Model Selection (TBD)
+
+- [ ] Isolation Forest
+- [ ] One-Class SVM
+- [ ] Autoencoder
+
+#### Data Preprocessing (TBD)
+
+- [ ] Normalization using MinMaxScaler
+- [ ] Train with normal behavior and test with 50/50 normal and malicious behavior
+
+#### Model Evaluation (TBD)
+
+- [ ] PCA
+- [ ] Linear discriminant analysis
+- [ ] Non-negative Matrix Factorization
+- [ ] Generalized discriminant analysis
