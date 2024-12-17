@@ -52,12 +52,14 @@ class TrafficSimulator(discord.Client):
 
             # Choose an interval based on the probabilities
             interval = np.random.choice(self.bin_edges[:-1], p=probabilities)
+
+            # Sleep for the interval duration
+            await asyncio.sleep(interval)
+            print("Sleep interval ended.")
+
             print(f"\nThe file was sended with {interval} seconds of interval")
             # send the last item in the files list
             await self.send_file(channel, files.pop())
-
-            # Wait for the next interval
-            await asyncio.sleep(interval)
 
         clean_files(self.exfiltrated_files_directory)
 
