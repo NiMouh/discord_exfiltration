@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from itertools import groupby
 import os
 
-quartiles = [30, 60, 90]
+percentiles_activity = [60, 90]
 percentiles = [95, 98]
 
 def extractStats(data):
@@ -59,7 +59,7 @@ def extractFeatures(data):
     # Activity statistics
     mean_activity_duration = np.mean(activity_durations) if activity_durations else 0
     variance_activity_duration = np.var(activity_durations) if activity_durations else 0
-    quartiles_activity_duration = np.array(np.percentile(activity_durations, quartiles)) if activity_durations else np.zeros(len(quartiles))
+    quartiles_activity_duration = np.array(np.percentile(activity_durations, percentiles_activity)) if activity_durations else np.zeros(len(percentiles_activity))
 
     # Mean and Standard deviation of number of bytes (download and upload) for TCP and udp
     tcp_upload_bytes = data[:, 1]
@@ -196,9 +196,8 @@ def main():
                        "variance_silence_duration", 
                        "mean_activity_duration", 
                        "variance_activity_duration", 
-                       f"{quartiles[0]}_quartile_activity_duration", 
-                       f"{quartiles[1]}_quartile_activity_duration", 
-                       f"{quartiles[2]}_quartile_activity_duration",
+                       f"{percentiles_activity[0]}_percentile_activity_duration", 
+                       f"{percentiles_activity[1]}_percentile_activity_duration", 
                        "tcp_upload_bytes_std_dev", 
                        "tcp_download_bytes_std_dev", 
                        "udp_upload_bytes_std_dev", 

@@ -105,8 +105,9 @@ This metrics obtained in the sampling interval are:
 
 This function extracts the following features:
 
-- **Mean and Variance of silence and activity times**
-- **Mean, standard deviation and 25th, 50th and 75th quartiles of upload and download bytes for TCP and UDP (separately)**
+- **Mean and Variance of silence times**
+- **Mean, Variance and 95th and 98th percentile of activity times**
+- **Mean, standard deviation, 60th and 90th percentile of upload and download bytes for TCP and UDP (separately)**
 - **Mean and standard deviation of total bytes**
 - **Mean and standard deviation of number of packets**
 
