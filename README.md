@@ -243,11 +243,29 @@ python data_processing.py --input output_file.txt --method 3 --width 300 --slide
 
 ### Detection using Machine Learning (Unsupervised Learning)
 
-#### Model Selection (TBD)
+#### Models Selection
 
-- [ ] Isolation Forest
-- [ ] One-Class SVM
-- [ ] Autoencoder
+1. Autoencoders
+   - Type: Neural Network-based
+   - Use Case: Anomaly detection
+   - How it works:
+     - Train an autoencoder to reconstruct "normal" network traffic patterns from packet data.
+     - During inference, unusual traffic (indicative of exfiltration) will have a higher reconstruction error.
+   - Why suitable: Autoencoders work well with unlabeled data and are ideal for detecting anomalies like data exfiltration.
+2. Isolation Forest
+   - Type: Tree-based anomaly detection
+   - Use Case: Identify outlier network sessions
+   - How it works:
+     - Isolation Forest isolates data points by randomly partitioning feature space.
+     - Exfiltration traffic, which is rare or abnormal, is "isolated" faster.
+   - Why suitable: Works efficiently with high-dimensional data like packet captures.
+3. One-Class SVM (Support Vector Machine)
+   - Type: Kernel-based anomaly detection
+   - Use Case: Classifies normal vs. anomalous behavior
+   - How it works:
+     - Trains on normal packet behavior to create a decision boundary.
+     - Exfiltration (anomalous data) lies outside the learned boundary.
+   - Why suitable: Handles packet-level feature extraction well and doesn't require labels.
 
 #### Data Preprocessing (TBD)
 
