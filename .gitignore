@@ -1,7 +1,5 @@
 venv/
 .env
 data/
-features/
 captures/
-samples/
 __pycache__/

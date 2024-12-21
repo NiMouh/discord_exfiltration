@@ -59,6 +59,10 @@ Some examples of data exfiltration using Discord:
 > - [ ] Type of data sended
 > - [ ] Notifications received
 
+### Data Acquisition
+
+Wireshark captures (`.pcap`): [link](https://filesender.fccn.pt/?s=download&token=36d2c803-a78a-4a1c-8b12-48d59396b122)
+
 ### Aggregation
 
 To perform the analysis, the following data will be extracted:
@@ -114,7 +118,7 @@ This function extracts the following features:
 > In the following order: `mean_silence_duration, variance_silence_duration, mean_activity_duration, variance_activity_duration, quartiles_activity_duration,tcp_upload_bytes_std_dev, tcp_download_bytes_std_dev, udp_upload_bytes_std_dev, udp_download_bytes_std_dev,tcp_upload_bytes_mean, tcp_download_bytes_mean, udp_upload_bytes_mean, udp_download_bytes_mean,quartiles_upload_bytes, quartiles_download_bytes,bytes_mean, bytes_std_dev,packets_mean, packets_std_dev`
 
 > [!IMPORTANT]
-> Threshold of silence activity (number of packets) is tbc.
+> Threshold of silence activity (number of packets) is 3.
 
 ### Production
 
@@ -141,12 +145,12 @@ The files used in the exfiltration process will be located in the `data` folder.
 ### Tasks to be done
 
 - [x] Problem Brainstorm
-- [ ] Data Collection
+- [x] Data Collection
 - [x] Define the Features
-- [ ] Data Processing
-- [ ] Choose the Models and define the parameters
-- [ ] Model Training
-- [ ] Model Evaluation
+- [x] Data Processing
+- [x] Choose the Models and define the parameters
+- [x] Model Training
+- [x] Model Evaluation
 
 ## Phase 2: Project Development
 
@@ -172,6 +176,16 @@ The files used in the exfiltration process will be located in the `data` folder.
 ```
 
 ### Bot Creation
+
+To create a bot in Discord, follow these steps:
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click on `New Application`
+3. Fill in the `Name` and click on `Create`
+4. Go to the `Bot` section and click on `Add Bot`
+5. Click on `Copy` to copy the `Token` and paste it in the `.env` file
+6. Go to the `OAuth2` section and select the `bot` scope
+7. Copy the URL and paste it in the browser to add the bot to a server
 
 References:
 
@@ -204,6 +218,7 @@ pip install -r requirements.txt
 echo "DISCORD_TOKEN=<your_token>" >> .env
 ```
 
+> [!IMPORTANT]
 > The `.env` file should be in the `src` folder
 
 ### Running the bot
